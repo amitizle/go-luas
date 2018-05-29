@@ -2,7 +2,6 @@ package luas
 
 import (
 	"encoding/xml"
-	"fmt"
 	"github.com/amitizle/go-luas/internal/http_client"
 )
 
@@ -24,39 +23,23 @@ type Tram struct {
 	Destination string `xml:"destination,attr"`
 }
 
-type Stop struct {
-	NameAbv     string
-	Name        string
-	Line        string
-	Coordinates map[string]float64
-}
+func GetStopForecast(stopAbv string) (*StopInfo, error) {
+	stop, err := GetStop(stopAbv)
+	var stopInfo StopInfo
+	if err != nil {
+		return &stopInfo, err
+	}
+	httpClient, err := luas_http_client.NewClient("")
+	if err != nil {
+		return &stopInfo, err
+	}
+	resp, err := httpClient.GetForecast(stop.NameAbv)
+	if err != nil {
+		return &stopInfo, err
+	}
+	err = xml.Unmarshal(resp, &stopInfo)
 
-func GetStop(stopAbv string) (*Stop, error) {
-}
-
-// func GetStopInfo(stopAbv string) (*StopInfo, error) {
-// 	httpC, _ := luas_http_client.NewClient("")
-// 	resp, err := httpC.GetForecast(stopAbv)
-// 	if err != nil {
-// 		return &StopInfo{}, err
-// 	}
-// 	stopInfo, err := parseLuasResponse(resp)
-// 	if err != nil {
-// 		return &StopInfo{}, err
-// 	}
-// 	return stopInfo, nil
-// }
-
-func main() {
-	httpC, _ := luas_http_client.NewClient("")
-	resp, _ := httpC.GetForecast()
-
-	fmt.Println("Body:", string(resp))
-
-	var q StopInfo
-	xml.Unmarshal(resp, &q)
-	fmt.Println(q)
-
+	return &stopInfo, nil
 }
 
 func parseLuasResponse(xmlString []byte) (*StopInfo, error) {

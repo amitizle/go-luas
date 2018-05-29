@@ -4,7 +4,15 @@
 
 ## Using
 
+TODO
+
 ## Testing
+
+```
+$ go test ./...
+ok      github.com/amitizle/go-luas     0.013s
+ok      github.com/amitizle/go-luas/internal/http_client        (cached)
+```
 
 ## Resources
 
