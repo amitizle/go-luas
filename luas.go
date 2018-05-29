@@ -39,7 +39,7 @@ func GetStopForecast(stopAbv string) (*StopInfo, error) {
 	}
 	err = xml.Unmarshal(resp, &stopInfo)
 
-	return &stopInfo, nil
+	return &stopInfo, err
 }
 
 func parseLuasResponse(xmlString []byte) (*StopInfo, error) {
