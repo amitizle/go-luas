@@ -2,6 +2,8 @@
 
 [Luas](https://www.luas.ie/) API library, written in Go.
 
+**This is a project that I'm doing to learn Go**, so things might look terrible :/
+
 ## Using
 
 TODO
