@@ -1,12 +1,5 @@
 package luas
 
-type Stop struct {
-	Name        string    `json:"name"`
-	NameAbv     string    `json:"name_abv"`
-	Line        string    `json:"line"`
-	Coordinates []float64 `json:"coordinates"`
-}
-
 var allStops = []*Stop{
 	&Stop{
 		Name:        "Tallaght",

@@ -2,8 +2,17 @@ package luas
 
 import (
 	"encoding/xml"
+	"fmt"
 	"github.com/amitizle/go-luas/internal/http_client"
+	"strings"
 )
+
+type Stop struct {
+	Name        string    `json:"name"`
+	NameAbv     string    `json:"name_abv"`
+	Line        string    `json:"line"`
+	Coordinates []float64 `json:"coordinates"`
+}
 
 type StopInfo struct {
 	Directions []Direction `xml:"direction"`
@@ -23,12 +32,34 @@ type Tram struct {
 	Destination string `xml:"destination,attr"`
 }
 
-func GetStopForecast(stopAbv string) (*StopInfo, error) {
-	stop, err := GetStop(stopAbv)
+func parseLuasResponse(xmlString []byte) (*StopInfo, error) {
 	var stopInfo StopInfo
+	err := xml.Unmarshal(xmlString, &stopInfo)
 	if err != nil {
-		return &stopInfo, err
+		return &StopInfo{}, err
 	}
+	return &stopInfo, nil
+}
+
+func AllStops() []*Stop {
+	return allStops
+}
+
+func GetStop(stopName string) (*Stop, error) {
+	stopNameUpcase := strings.ToUpper(stopName)
+	allStops := AllStops()
+	for _, stop := range allStops {
+		if strings.ToUpper(stop.NameAbv) == stopNameUpcase ||
+			strings.ToUpper(stop.Name) == stopNameUpcase {
+			return stop, nil
+		}
+	}
+	return &Stop{}, fmt.Errorf("no such stop %v", stopNameUpcase)
+}
+
+// TODO integration test
+func (stop *Stop) Forecast() (*StopInfo, error) {
+	var stopInfo StopInfo
 	httpClient, err := luas_http_client.NewClient("")
 	if err != nil {
 		return &stopInfo, err
@@ -40,13 +71,4 @@ func GetStopForecast(stopAbv string) (*StopInfo, error) {
 	err = xml.Unmarshal(resp, &stopInfo)
 
 	return &stopInfo, err
-}
-
-func parseLuasResponse(xmlString []byte) (*StopInfo, error) {
-	var stopInfo StopInfo
-	err := xml.Unmarshal(xmlString, &stopInfo)
-	if err != nil {
-		return &StopInfo{}, err
-	}
-	return &stopInfo, nil
 }
