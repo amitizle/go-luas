@@ -7,13 +7,14 @@ require 'uri'
 # Hacky script, temporary
 
 STOP_INFO_URL = "https://data.smartdublin.ie/cgi-bin/rtpi/busstopinformation?stopid&format=json"
-TARGET_FILE = File.join(__dir__, '..', 'configs', 'luas_stops.json')
+TARGET_GO_FILE = File.join(__dir__, '..', 'luas_stops_def.go')
 
 def get_luas_stops(str)
   json = JSON.parse(str)
-  luas_stops = json["results"].select do |stop|
+  stop_structs = []
+  json["results"].select do |stop|
     stop['operators'] && stop['operators'].first['name'] == 'LUAS'
-  end.map do |luas_stop|
+  end.each do |luas_stop|
     stop_name = /LUAS\s+(?<stop_name>.*)/.match(luas_stop['displaystopid'])[:stop_name]
     short_stop_name = nil
     short_stop_name = case stop_name
@@ -52,9 +53,30 @@ def get_luas_stops(str)
       line: luas_stop['operators'].first['routes'].first.downcase,
       coordinates: [luas_stop['latitude'].to_f, luas_stop['longitude'].to_f]
     }
-    new_stop
+    stop_structs << <<~EOG
+    &Stop{
+      Name: "#{stop_name}",
+      NameAbv: "#{short_stop_name || stop_name[0..2].upcase}",
+      Line: "#{luas_stop['operators'].first['routes'].first.downcase}",
+      Coordinates: []float64{#{luas_stop['latitude'].to_f}, #{luas_stop['longitude'].to_f}},
+    },
+    EOG
   end
-  luas_stops
+  all_stop_structs = stop_structs.join
+  return <<~EOG
+  package luas
+
+  type Stop struct {
+    Name        string    `json:"name"`
+    NameAbv     string    `json:"name_abv"`
+    Line        string    `json:"line"`
+    Coordinates []float64 `json:"coordinates"`
+  }
+
+  var allStops = []*Stop{
+    #{all_stop_structs}
+  }
+  EOG
 end
 
 def http_get(url)
@@ -63,4 +85,5 @@ def http_get(url)
 end
 
 luas_stops = get_luas_stops(http_get(STOP_INFO_URL))
-File.write(TARGET_FILE, JSON.pretty_generate(luas_stops))
+File.write(TARGET_GO_FILE, luas_stops)
+`go fmt #{TARGET_GO_FILE}`
