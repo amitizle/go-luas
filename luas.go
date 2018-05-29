@@ -28,7 +28,7 @@ type Direction struct {
 }
 
 type Tram struct {
-	DueMins     int    `xml:"dueMins,attr"`
+	DueMins     string `xml:"dueMins,attr"` // string because it can be "DUE"
 	Destination string `xml:"destination,attr"`
 }
 

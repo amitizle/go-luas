@@ -27,11 +27,11 @@ func TestXMLUnmarshalling(t *testing.T) {
 				Name: "Inbound",
 				Trams: []Tram{
 					Tram{
-						DueMins:     3,
+						DueMins:     "3",
 						Destination: "Parnell",
 					},
 					Tram{
-						DueMins:     15,
+						DueMins:     "DUE",
 						Destination: "Broombridge",
 					},
 				},
@@ -40,7 +40,7 @@ func TestXMLUnmarshalling(t *testing.T) {
 				Name: "Outbound",
 				Trams: []Tram{
 					Tram{
-						DueMins:     9,
+						DueMins:     "9",
 						Destination: "Bride's Glen",
 					},
 				},
